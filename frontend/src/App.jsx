@@ -34,7 +34,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/research?topic=${encodeURIComponent(topic)}`,
+  `${import.meta.env.VITE_BACKEND_URL}/research?topic=${encodeURIComponent(topic)}`,
         {
           method: 'POST',
         }
