@@ -10,17 +10,29 @@ load_dotenv()
 
 app = FastAPI(title="ResearchAI Backend")
 
+
+# --------------------------------------------------
+# CORS CONFIGURATION
+# --------------------------------------------------
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://ai-research-agent-n76sghrbi-gunjan-projects.vercel.app",
-        "https://ai-research-agent-3disfl3rn-gunjan-projects.vercel.app",
+        "http://127.0.0.1:5173",
+        "https://ai-research-agent-7t34zbwaf-gunjan-projects.vercel.app",
     ],
+    allow_origin_regex=r"https://ai-research-agent-[a-z0-9-]+\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# --------------------------------------------------
+# GEMINI CONFIGURATION
+# --------------------------------------------------
+
 api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
@@ -29,10 +41,20 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 
+# --------------------------------------------------
+# ROOT ENDPOINT
+# --------------------------------------------------
+
 @app.get("/")
 def root():
-    return {"message": "ResearchAI backend is running"}
+    return {
+        "message": "ResearchAI backend is running"
+    }
 
+
+# --------------------------------------------------
+# RESEARCH ENDPOINT
+# --------------------------------------------------
 
 @app.post("/research")
 def research(topic: str):
@@ -75,6 +97,7 @@ Keep the explanation clear and easy to understand.
         grounding_metadata = response.candidates[0].grounding_metadata
 
         if grounding_metadata and grounding_metadata.grounding_chunks:
+
             for chunk in grounding_metadata.grounding_chunks:
 
                 if chunk.web:
