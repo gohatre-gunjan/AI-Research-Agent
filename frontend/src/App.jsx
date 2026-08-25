@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import './App.css'
 
 function App() {
@@ -96,7 +97,6 @@ function App() {
       )
     } catch (err) {
       console.error('Research request failed:', err)
-
       setError(`Backend error: ${err.message}`)
     } finally {
       setLoading(false)
@@ -252,7 +252,9 @@ function App() {
             </div>
 
             <div className="result-text">
-              {result}
+              <ReactMarkdown>
+                {result}
+              </ReactMarkdown>
             </div>
 
             {sources.length > 0 && (
