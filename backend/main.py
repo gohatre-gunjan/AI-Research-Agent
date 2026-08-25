@@ -15,6 +15,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "https://ai-research-agent-n76sghrbi-gunjan-projects.vercel.app",
+        "https://ai-research-agent-3disfl3rn-gunjan-projects.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
