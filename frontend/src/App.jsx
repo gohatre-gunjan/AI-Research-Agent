@@ -15,7 +15,12 @@ function App() {
     const savedHistory = localStorage.getItem('researchHistory')
 
     if (savedHistory) {
-      setHistory(JSON.parse(savedHistory))
+      try {
+        setHistory(JSON.parse(savedHistory))
+      } catch (err) {
+        console.error('Failed to load research history:', err)
+        localStorage.removeItem('researchHistory')
+      }
     }
   }, [])
 
@@ -33,25 +38,45 @@ function App() {
     setShowHistory(false)
 
     try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, '')
+
+      if (!backendUrl) {
+        throw new Error(
+          'VITE_BACKEND_URL is missing. Check the Vercel environment variable.'
+        )
+      }
+
       const response = await fetch(
-  `${import.meta.env.VITE_BACKEND_URL}/research?topic=${encodeURIComponent(topic)}`,
+        `${backendUrl}/research?topic=${encodeURIComponent(topic)}`,
         {
           method: 'POST',
         }
       )
 
       if (!response.ok) {
-        throw new Error('Failed to get research from backend.')
+        let errorMessage = `Backend returned HTTP ${response.status}`
+
+        try {
+          const errorData = await response.json()
+
+          if (errorData.detail) {
+            errorMessage = errorData.detail
+          }
+        } catch {
+          // Ignore JSON parsing errors
+        }
+
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
 
-      setResult(data.result)
+      setResult(data.result || '')
       setSources(data.sources || [])
 
       const newResearch = {
         topic: topic,
-        result: data.result,
+        result: data.result || '',
         sources: data.sources || [],
         date: new Date().toLocaleString(),
       }
@@ -70,11 +95,9 @@ function App() {
         JSON.stringify(updatedHistory)
       )
     } catch (err) {
-      console.error(err)
+      console.error('Research request failed:', err)
 
-      setError(
-        'Could not connect to the ResearchAI backend. Make sure FastAPI is running.'
-      )
+      setError(`Backend error: ${err.message}`)
     } finally {
       setLoading(false)
     }
